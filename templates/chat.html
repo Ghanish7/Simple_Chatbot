@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat UI - Simple Chatbot using Python</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-dark text-white font-sans">
+    <div class="d-flex min-vh-100 overflow-hidden relative">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar border-end border-secondary-subtle d-flex flex-column" id="chatSidebar">
+            <div class="p-3 border-bottom border-secondary-subtle d-flex align-items-center justify-content-between">
+                <a class="font-display fw-bold text-white text-decoration-none" href="/">
+                    <i class="fa-solid fa-robot text-primary me-2"></i>SimpleChat.py
+                </a>
+                <button class="btn btn-sm text-secondary border-0 d-md-none" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-xmark fs-5"></i>
+                </button>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="p-3">
+                <button class="btn btn-primary w-full py-2.5 rounded-xl text-start d-flex align-items-center justify-content-between outline-none" onclick="startNewChat()">
+                    <span><i class="fa-solid fa-plus me-2"></i>New Conversation</span>
+                    <kbd class="font-mono text-xs opacity-50 bg-black px-1.5 py-0.5 rounded">R</kbd>
+                </button>
+            </div>
+
+            <!-- Predefined Intent Guides -->
+            <div class="px-3 py-2 text-xs font-mono tracking-wider text-secondary text-uppercase">Intents Dataset</div>
+            <div class="flex-grow-1 overflow-y-auto px-2 mb-3">
+                <div class="list-group list-group-flush gap-1">
+                    <button class="list-group-item list-group-item-action bg-transparent border-0 text-secondary text-sm rounded-lg" onclick="fillInput('Hello')">
+                        <i class="fa-regular fa-comments me-2 text-primary"></i>Hello / Hi
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent border-0 text-secondary text-sm rounded-lg" onclick="fillInput('What is your name?')">
+                        <i class="fa-solid fa-id-card me-2 text-primary"></i>What is your name?
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent border-0 text-secondary text-sm rounded-lg" onclick="fillInput('How are you?')">
+                        <i class="fa-regular fa-smile me-2 text-primary"></i>How are you?
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent border-0 text-secondary text-sm rounded-lg" onclick="fillInput('Help')">
+                        <i class="fa-regular fa-circle-question me-2 text-primary"></i>Help Info
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent border-0 text-secondary text-sm rounded-lg" onclick="fillInput('Thank you')">
+                        <i class="fa-regular fa-thumbs-up me-2 text-primary"></i>Thank you
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent border-0 text-secondary text-sm rounded-lg" onclick="fillInput('Bye')">
+                        <i class="fa-solid fa-right-from-bracket me-2 text-primary"></i>Bye
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer Utilities -->
+            <div class="p-3 border-top border-secondary-subtle gap-2 d-flex flex-column">
+                <a href="/dashboard" class="btn btn-outline-secondary w-full text-start py-2 rounded-lg text-white">
+                    <i class="fa-solid fa-chart-pie me-2 text-primary"></i>Go to Dashboard
+                </a>
+                <button class="btn btn-outline-danger w-full text-start py-2 rounded-lg" onclick="triggerClearChat()">
+                    <i class="fa-solid fa-trash-can me-2"></i>Clear Chat History
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Window Container -->
+        <main class="flex-grow-1 d-flex flex-column min-vh-100 bg-chat bg-dark text-white relative">
+            <!-- Floating Header -->
+            <header class="p-3 border-bottom border-secondary-subtle d-flex align-items-center justify-content-between glassmorphism sticky-top">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn text-white p-1 me-2 d-md-none border-0" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-bars fs-5"></i>
+                    </button>
+                    <div class="avatar-small bg-primary rounded-full d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-robot text-white text-xs"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">NLTK Chat Bot</h6>
+                        <small class="text-success text-xxs d-flex align-items-center">
+                            <span class="pulse-indicator me-1.5"></span>Active Local Python Engine
+                        </small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-secondary text-white rounded-lg px-3" onclick="exportHistoryTxt()">
+                        <i class="fa-solid fa-download me-1 text-primary"></i>Export TXT
+                    </button>
+                </div>
+            </header>
+
+            <!-- Conversation stage -->
+            <div class="flex-grow-1 overflow-y-auto px-4 py-5" style="max-height: calc(100vh - 160px);" id="chatBox">
+                <!-- Welcome Prompt -->
+                <div class="welcome-box max-w-xl mx-auto text-center py-5" id="welcomeMessage">
+                    <div class="avatar-large bg-gradient-primary mx-auto mb-4 d-flex align-items-center justify-content-center rounded-full shadow-lg" style="width: 80px; height: 80px;">
+                        <i class="fa-solid fa-robot text-white display-5"></i>
+                    </div>
+                    <h3 class="fw-bold text-white mb-2">College Mini Project Console</h3>
+                    <p class="text-secondary text-sm">
+                        Welcome to the interactive preview console. This chatbot cleans user input, extracts NLTK tokens, 
+                        and compares strings against mapped dataset keys dynamically. 
+                    </p>
+                    <div class="row g-2 mt-4 text-start">
+                        <div class="col-6">
+                            <div class="glass-btn p-3 rounded-xl cursor-all text-center border border-secondary" onclick="fillInput('hi')">
+                                <span class="d-block text-white fw-semibold mb-1">"Hi"</span>
+                                <small class="text-secondary text-xxs">Simple Greeting</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="glass-btn p-3 rounded-xl cursor-all text-center border border-secondary" onclick="fillInput('what is your name')">
+                                <span class="d-block text-white fw-semibold mb-1">"What is your name"</span>
+                                <small class="text-secondary text-xxs">Check Bot Identity</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages container -->
+                <div id="messagesContainer" class="d-flex flex-column gap-4 max-w-3xl mx-auto"></div>
+
+                <!-- Typing indicator -->
+                <div id="typingIndicator" class="typing-indicator d-none max-w-3xl mx-auto py-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="avatar-small bg-primary rounded-full d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+                            <i class="fa-solid fa-robot text-white text-xs"></i>
+                        </div>
+                        <div class="typing-bubble glassmorphism p-3 rounded-2xl d-flex align-items-center gap-1 bg-secondary-subtle">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer input container -->
+            <footer class="p-3 bg-transparent border-top border-secondary-subtle sticky-bottom">
+                <div class="max-w-3xl mx-auto relative d-flex flex-column gap-2 mb-2">
+                    <div class="input-group scroll-group shadow-md rounded-2xl bg-dark border border-secondary overflow-hidden">
+                        <input type="text" id="userInput" class="form-control bg-transparent text-white border-0 py-3.5 px-4 outline-none no-shadow font-sans" placeholder="Ask NLTK anything from intents.json files (e.g. hello, bye)..." autofocus onkeydown="handleKeyPress(event)">
+                        <button class="btn btn-primary d-flex align-items-center justify-content-center px-4" type="button" id="sendBtn" onclick="sendMessage()">
+                            <i class="fa-solid fa-paper-plane text-white"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between px-2 text-xxs text-secondary">
+                        <span>Intents dataset match rules apply: lowercase + punctuation stripped.</span>
+                        <span id="charCount">0 characters</span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Toast Component -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast align-items-center text-white bg-dark border-secondary glassmorphism" role="alert">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-success" id="toastIcon"></i>
+                    <span id="toastMsg">Success message here!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

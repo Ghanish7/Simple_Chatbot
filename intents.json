@@ -1,0 +1,12 @@
+{
+  "hello": "Hello! How can I help you today?",
+  "hi": "Hi there! Nice to meet you.",
+  "how are you": "I am doing great. How about you?",
+  "what is your name": "I am an AI Chatbot created using Python.",
+  "bye": "Goodbye! Have a wonderful day.",
+  "thank you": "You're welcome!",
+  "help": "I can answer simple predefined questions.",
+  "project info": "This project is a Simple AI Chatbot developed using Python, Flask, NLTK, and Bootstrap 5 for modern, responsive UI elements.",
+  "nltk": "NLTK (Natural Language Toolkit) is a powerful Python library used for building applications that analyze and work with human language data.",
+  "flask": "Flask is a lightweight, clean, and highly extensible Python micro web framework ideal for small services and projects."
+}
