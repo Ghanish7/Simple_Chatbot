@@ -10,10 +10,16 @@ import nltk
 from nltk.tokenize import word_tokenize
 
 # Secure downloading of the NLTK Punkt tokenizer
+# Configure NLTK for Vercel
+NLTK_DATA_DIR = "/tmp/nltk_data"
+os.makedirs(NLTK_DATA_DIR, exist_ok=True)
+
+nltk.data.path.insert(0, NLTK_DATA_DIR)
+
 try:
-    nltk.data.find('tokenizers/punkt')
+    nltk.data.find("tokenizers/punkt")
 except LookupError:
-    nltk.download('punkt', quiet=True)
+    nltk.download("punkt", download_dir=NLTK_DATA_DIR, quiet=True)
 
 class NLTKChatbot:
     def __init__(self, intents_path='intents.json'):
